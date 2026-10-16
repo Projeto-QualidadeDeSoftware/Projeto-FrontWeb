@@ -81,10 +81,49 @@ export async function login(cpf, senha) {
   return resposta;
 }
 
+// produto
 export const produtosApi = {
   listar: () => requisicao('/produto'),
   buscarPorId: (id) => requisicao(`/produto/${id}`),
   criar: (produto) => requisicao('/produto', { method: 'POST', body: JSON.stringify(produto) }),
   atualizar: (id, produto) => requisicao(`/produto/${id}`, { method: 'PUT', body: JSON.stringify(produto) }),
   excluir: (id) => requisicao(`/produto/${id}`, { method: 'DELETE' }),
+};
+
+//cliente
+export const clientesApi = {
+    listar: () => requisicao('/cliente'),
+    buscarPorId: (id) => requisicao(`/cliente/${id}`),
+    criar: (cliente) => requisicao('/cliente', { method: 'POST', body: JSON.stringify(cliente), }),
+    atualizar: (id, cliente) => requisicao(`/cliente/${id}`, { method: 'PUT', body: JSON.stringify(cliente), }),
+    excluir: (id) => requisicao(`/cliente/${id}`, { method: 'DELETE', }),
+    listarVendas: (id) => requisicao(`/cliente/${id}/vendas`),
+};
+
+// funcionário
+export const funcionariosApi = {
+    listar: () => requisicao('/funcionario'),
+    buscarPorId: (id) => requisicao(`/funcionario/${id}`),
+    criar: (funcionario) => requisicao('/funcionario', {
+        method: 'POST',
+        body: JSON.stringify(funcionario),
+    }),
+    atualizar: (id, funcionario) => requisicao(`/funcionario/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(funcionario),
+    }),
+    excluir: (id) => requisicao(`/funcionario/${id}`, {
+        method: 'DELETE',
+    }),
+    listarVendas: (id) => requisicao(`/funcionario/${id}/vendas`),
+};
+
+// vendas
+export const vendasApi = {
+    listar: () => requisicao('/venda'),
+    buscarPorId: (id) => requisicao(`/venda/${id}`),
+    criar: (venda) => requisicao('/venda', {
+        method: 'POST',
+        body: JSON.stringify(venda),
+    }),
 };

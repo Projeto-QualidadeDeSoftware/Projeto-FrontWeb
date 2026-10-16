@@ -2,6 +2,9 @@
 import SidebarLogo from "./components/Sidebar.jsx";
 import LoginScreen from "./pages/LoginScreen.jsx";
 import ProdutosScreen from "./pages/ProdutosScreen.jsx";
+import ClientesScreen from "./pages/ClientesScreen.jsx";
+import FuncionariosScreen from "./pages/FuncionariosScreen.jsx";
+import CaixaScreen from "./pages/CaixaScreen.jsx";
 import { limparToken, obterToken } from "./services/api";
 
 function App() {
@@ -40,27 +43,23 @@ function App() {
 
             <main className="min-w-0 flex-1">
                 {activePage === "produtos" && <ProdutosScreen />}
+                {activePage === "clientes" && <ClientesScreen />}
+                {activePage === "funcionarios" && <FuncionariosScreen />}
+                {activePage === "caixa" && <CaixaScreen />}
 
-                {activePage !== "produtos" && (
-                    <div className="p-8">
-                        <h1 className="text-2xl font-bold text-[#0E1F39]">
-                            {activePage === "caixa" && "Frente de Caixa"}
-                            {activePage === "clientes" && "Clientes"}
-                            {activePage === "funcionarios" && "Funcionários"}
-                            {activePage === "relatorios" && "Relatórios"}
-                            {activePage === "configuracoes" && "Configurações"}
-                        </h1>
-
-                        <p className="mt-2 text-gray-500">
-                            (Placeholder)
-                        </p>
-                    </div>
-                )}
+                {/* atualizar dps*/}
+                {activePage !== "produtos" &&
+                    activePage !== "clientes" && (
+                        <div className="p-8">
+                            <p className="">
+                                Em desenvolvimento
+                            </p>
+                        </div>
+                    )}
             </main>
         </div>
     );
 }
-
 export default App;
 
 
