@@ -1,4 +1,4 @@
 Inicialização: 
-	cd "frontwebpronte"
-	npm install -D @vitejs/plugin-react @tailwindcss/vite tailwindcss
-	npm run dev
+<br>cd "frontwebpronte"
+<br>npm install -D @vitejs/plugin-react @tailwindcss/vite tailwindcss
+<br>npm run dev
