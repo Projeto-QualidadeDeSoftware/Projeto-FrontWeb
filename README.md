@@ -1,0 +1,4 @@
+Inicialização: 
+npm install -D @vitejs/plugin-react @tailwindcss/vite tailwindcss
+
+npm run dev
