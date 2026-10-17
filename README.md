@@ -112,8 +112,4 @@ A inicialização pelo botão de execução do Visual Studio depende da configur
 
 A licença do projeto ainda não foi definida.
 
-Licença
-
-A licença do projeto ainda não foi definida.
-
 
