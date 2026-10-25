@@ -1,37 +1,81 @@
-﻿import { useState } from "react";
+import { useEffect, useState } from "react";
 import SidebarLogo from "./components/Sidebar.jsx";
 import LoginScreen from "./pages/LoginScreen.jsx";
 import ProdutosScreen from "./pages/ProdutosScreen.jsx";
 import ClientesScreen from "./pages/ClientesScreen.jsx";
 import FuncionariosScreen from "./pages/FuncionariosScreen.jsx";
 import CaixaScreen from "./pages/CaixaScreen.jsx";
-import { limparToken, obterToken } from "./services/api";
+import VendasScreen from "./pages/VendasScreen.jsx";
+import AssistenteScreen from "./pages/AssistenteScreen.jsx";
+import {
+    authApi,
+    limparToken,
+    obterToken,
+    obterUsuario,
+    salvarUsuario,
+    SESSAO_EXPIRADA,
+} from "./services/api";
+
+const TELAS = {
+    caixa: CaixaScreen,
+    produtos: ProdutosScreen,
+    clientes: ClientesScreen,
+    funcionarios: FuncionariosScreen,
+    vendas: VendasScreen,
+    assistente: AssistenteScreen,
+};
 
 function App() {
-    const [autenticado, setAutenticado] = useState(
-        Boolean(obterToken())
-    );
+    const [autenticado, setAutenticado] = useState(Boolean(obterToken()));
+    const [usuario, setUsuario] = useState(obterUsuario());
+    const [activePage, setActivePage] = useState("caixa");
 
-    const [activePage, setActivePage] = useState("produtos");
+    useEffect(() => {
+        function sessaoExpirada() {
+            setAutenticado(false);
+            setUsuario(null);
+        }
+        window.addEventListener(SESSAO_EXPIRADA, sessaoExpirada);
+        return () => window.removeEventListener(SESSAO_EXPIRADA, sessaoExpirada);
+    }, []);
+
+    useEffect(() => {
+        if (autenticado && !usuario) {
+            authApi
+                .usuarioLogado()
+                .then((dados) => {
+                    salvarUsuario(dados);
+                    setUsuario(dados);
+                })
+                .catch(() => {});
+        }
+    }, [autenticado, usuario]);
 
     function handleLogout() {
         limparToken();
+        setUsuario(null);
         setAutenticado(false);
-        setActivePage("produtos");
+        setActivePage("caixa");
     }
 
     if (!autenticado) {
         return (
             <LoginScreen
-                onLogin={() => setAutenticado(true)}
+                onLogin={(resposta) => {
+                    setUsuario(resposta?.funcionario || null);
+                    setAutenticado(true);
+                }}
             />
         );
     }
+
+    const Tela = TELAS[activePage] || CaixaScreen;
 
     return (
         <div className="flex min-h-screen w-full bg-[#fffdf9]">
             <SidebarLogo
                 activePage={activePage}
+                usuario={usuario}
                 onNavigate={(pagina) => {
                     if (pagina === "sair") {
                         handleLogout();
@@ -42,44 +86,10 @@ function App() {
             />
 
             <main className="min-w-0 flex-1">
-                {activePage === "produtos" && <ProdutosScreen />}
-                {activePage === "clientes" && <ClientesScreen />}
-                {activePage === "funcionarios" && <FuncionariosScreen />}
-                {activePage === "caixa" && <CaixaScreen />}
-
-                {/* atualizar dps*/}
-                {activePage !== "produtos" &&
-                    activePage !== "clientes" &&
-                    activePage !== "funcionarios" &&
-                    activePage !== "caixa" && (
-                        <div className="p-8">
-                            <p className="">
-                                Em desenvolvimento
-                            </p>
-                        </div>
-                    )}
+                <Tela />
             </main>
         </div>
     );
 }
+
 export default App;
-
-
-/*
-import SidebarLogo from './components/Sidebar.jsx'
-import ProdutosScreen from './pages/ProdutosScreen.jsx'
-
-function App() {
-    return (
-        <div className="flex min-h-screen w-full bg-[#fffdf9]">
-            <SidebarLogo />
-
-            <main className="min-w-0 flex-1">
-                <ProdutosScreen />
-            </main>
-        </div>
-    )
-}
-
-export default App
-*/

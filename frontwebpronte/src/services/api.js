@@ -10,7 +10,22 @@ export function obterToken() {
 
 export function limparToken() {
   sessionStorage.removeItem('pronte_token');
+  sessionStorage.removeItem('pronte_usuario');
 }
+
+export function salvarUsuario(usuario) {
+  if (usuario) sessionStorage.setItem('pronte_usuario', JSON.stringify(usuario));
+}
+
+export function obterUsuario() {
+  try {
+    return JSON.parse(sessionStorage.getItem('pronte_usuario') || 'null');
+  } catch {
+    return null;
+  }
+}
+
+export const SESSAO_EXPIRADA = 'pronte:sessao-expirada';
 
 
 async function requisicao(caminho, opcoes = {}) {
@@ -38,9 +53,20 @@ async function requisicao(caminho, opcoes = {}) {
     }
 
     if (resposta.status === 401) {
+        const tinhaSessao = Boolean(obterToken());
         limparToken();
-        throw new Error(
-            "Sua sessão expirou ou você não está autenticado. Faça login novamente.");
+        if (tinhaSessao) {
+            window.dispatchEvent(new Event(SESSAO_EXPIRADA));
+            throw new Error("Sua sessão expirou. Faça login novamente.");
+        }
+        let mensagem = "Você não está autenticado. Faça login novamente.";
+        try {
+            const corpo = await resposta.json();
+            if (corpo?.mensagem) mensagem = corpo.mensagem;
+        } catch {
+            // resposta sem corpo JSON
+        }
+        throw new Error(mensagem);
     }
     const texto = await resposta.text();
     let dados = null;
@@ -78,8 +104,21 @@ export async function login(cpf, senha) {
   });
   if (!resposta?.token) throw new Error('A API não retornou o token esperado no login.');
   salvarToken(resposta.token);
+  salvarUsuario(resposta.funcionario);
   return resposta;
 }
+
+export const authApi = {
+    usuarioLogado: () => requisicao('/auth/me'),
+};
+
+// assistente de IA
+export const assistenteApi = {
+    perguntar: (pergunta) => requisicao('/assistente/pergunta', {
+        method: 'POST',
+        body: JSON.stringify({ pergunta }),
+    }),
+};
 
 // produto
 export const produtosApi = {

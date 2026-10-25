@@ -1,8 +1,8 @@
-﻿import React from "react";
+import React from "react";
 import './pronte.css';
 
 // ex: import { IconName } from "react-icons/name";
-import { HiShoppingCart, HiUserGroup, HiClipboardList, HiChartBar, HiCog, HiLogout } from "react-icons/hi";
+import { HiShoppingCart, HiUserGroup, HiClipboardList, HiChartBar, HiChatAlt2, HiLogout } from "react-icons/hi";
 import { LuPackageSearch } from "react-icons/lu";
 
 
@@ -16,13 +16,12 @@ const menuItems = [
         import { LuPackageSearch } from "react-icons/lu";*/},
     { label: "Clientes", icon: HiUserGroup, page: "clientes" },
     { label: "Funcionários", icon: HiClipboardList, page: "funcionarios" },
-    { label: "Relatórios", icon: HiChartBar, page: "relatorios" },
-    { label: "Configurações", icon: HiCog, page: "configuracoes" },
-    { label: "Sair", icon: HiLogout, page: "sair" },
+    { label: "Vendas", icon: HiChartBar, page: "vendas" },
+    { label: "Assistente IA", icon: HiChatAlt2, page: "assistente" },
 ];
 
 //https://www.material-tailwind.com/docs/react/sidebar
-function SidebarLogo({ activePage, onNavigate }) {
+function SidebarLogo({ activePage, onNavigate, usuario }) {
     return (
         <aside className="flex min-h-screen w-[270px] shrink-0 flex-col bg-[#0E1F39] px-[18px] py-4">
             <div className="mb-7 flex justify-center">
@@ -55,6 +54,23 @@ function SidebarLogo({ activePage, onNavigate }) {
                     );
                 })}
             </nav>
+
+            <div className="mt-auto rounded-[14px] bg-white/5 p-4">
+                <p className="truncate text-[15px] font-semibold text-white">
+                    {usuario?.nome || "Operador"}
+                </p>
+                <p className="truncate text-sm text-white/60">
+                    {usuario?.cargo || "Operador de caixa"}
+                </p>
+                <button
+                    type="button"
+                    onClick={() => onNavigate("sair")}
+                    className="mt-3 flex items-center gap-2 text-sm font-semibold text-[#ff8a57] transition hover:text-white"
+                >
+                    <HiLogout className="h-5 w-5" />
+                    Sair
+                </button>
+            </div>
         </aside>
     );
 }
