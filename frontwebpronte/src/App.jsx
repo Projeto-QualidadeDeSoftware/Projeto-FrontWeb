@@ -7,6 +7,7 @@ import FuncionariosScreen from "./pages/FuncionariosScreen.jsx";
 import CaixaScreen from "./pages/CaixaScreen.jsx";
 import VendasScreen from "./pages/VendasScreen.jsx";
 import AssistenteScreen from "./pages/AssistenteScreen.jsx";
+import AuditoriaScreen from "./pages/AuditoriaScreen.jsx";
 import {
     authApi,
     limparToken,
@@ -23,6 +24,7 @@ const TELAS = {
     funcionarios: FuncionariosScreen,
     vendas: VendasScreen,
     assistente: AssistenteScreen,
+    auditoria: AuditoriaScreen,
 };
 
 function App() {

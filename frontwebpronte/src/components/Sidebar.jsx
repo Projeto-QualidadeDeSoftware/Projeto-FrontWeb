@@ -2,7 +2,7 @@ import React from "react";
 import './pronte.css';
 
 // ex: import { IconName } from "react-icons/name";
-import { HiShoppingCart, HiUserGroup, HiClipboardList, HiChartBar, HiChatAlt2, HiLogout } from "react-icons/hi";
+import { HiShoppingCart, HiUserGroup, HiClipboardList, HiChartBar, HiChatAlt2, HiShieldCheck, HiLogout } from "react-icons/hi";
 import { LuPackageSearch } from "react-icons/lu";
 
 
@@ -18,7 +18,12 @@ const menuItems = [
     { label: "Funcionários", icon: HiClipboardList, page: "funcionarios" },
     { label: "Vendas", icon: HiChartBar, page: "vendas" },
     { label: "Assistente IA", icon: HiChatAlt2, page: "assistente" },
+    { label: "Auditoria", icon: HiShieldCheck, page: "auditoria", apenasAdministrador: true },
 ];
+
+function ehAdministrador(usuario) {
+    return String(usuario?.cargo || "").trim().toLowerCase() === "administrador";
+}
 
 //https://www.material-tailwind.com/docs/react/sidebar
 function SidebarLogo({ activePage, onNavigate, usuario }) {
@@ -33,7 +38,9 @@ function SidebarLogo({ activePage, onNavigate, usuario }) {
             </div>
 
             <nav className="flex flex-col gap-2">
-                {menuItems.map((item) => {
+                {menuItems
+                    .filter((item) => !item.apenasAdministrador || ehAdministrador(usuario))
+                    .map((item) => {
                     const Icon = item.icon;
                     const ativo = activePage === item.page;
 

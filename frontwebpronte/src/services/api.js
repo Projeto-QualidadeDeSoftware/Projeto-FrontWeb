@@ -112,6 +112,11 @@ export const authApi = {
     usuarioLogado: () => requisicao('/auth/me'),
 };
 
+// auditoria (somente Administrador)
+export const auditoriaApi = {
+    listar: (pagina = 0, tamanho = 100) => requisicao(`/auditoria?pagina=${pagina}&tamanho=${tamanho}`),
+};
+
 // assistente de IA
 export const assistenteApi = {
     perguntar: (pergunta) => requisicao('/assistente/pergunta', {
