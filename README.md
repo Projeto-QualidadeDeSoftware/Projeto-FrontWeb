@@ -108,8 +108,13 @@ Depois, acesse no navegador o endereço informado pelo Vite.
 
 A inicialização pelo botão de execução do Visual Studio depende da configuração do projeto JavaScript.
 
+## CI/CD
+
+- **CI** (`.github/workflows/ci.yml`): em todo push e pull request para `main` e `dev`, roda `npm ci`, o lint e o `npm run build`. Se o código não compilar, o PR não pode ser mesclado.
+- **CD** (`.github/workflows/cd.yml`): a cada alteração na `main`, gera o site apontando para a API de homologação e publica em `https://web-hml.20-151-6-104.sslip.io`; depois da aprovação de um integrante no environment `producao`, gera o site apontando para a API de produção e publica em `https://web.20-151-6-104.sslip.io`.
+
+O endereço da API em cada ambiente vem da variable `API_URL` do environment do GitHub. Localmente, `npm run dev` usa o `.env` (`localhost`) e `npm run build` usa o `.env.production`.
+
 ## Licença
 
 A licença do projeto ainda não foi definida.
-
-

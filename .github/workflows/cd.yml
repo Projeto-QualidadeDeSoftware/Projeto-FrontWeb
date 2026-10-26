@@ -1,0 +1,152 @@
+name: CD
+
+# Entrega contínua do front web: a cada alteração na main
+#   1. gera o site apontando para a API de homologação e publica em HOMOLOGAÇÃO, na VPS;
+#   2. espera a aprovação de um integrante do grupo;
+#   3. gera o site apontando para a API de produção e publica em PRODUÇÃO.
+#
+# A aprovação é configurada em Settings > Environments > producao (Required reviewers).
+# Cada environment tem as variables API_URL (endereço da API) e APP_URL (endereço do site).
+# O acesso à VPS usa os secrets VPS_HOST, VPS_USUARIO e VPS_CHAVE_SSH.
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: cd
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-homologacao:
+    name: Deploy em homologação
+    runs-on: ubuntu-latest
+    environment:
+      name: homologacao
+      url: ${{ vars.APP_URL }}
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontwebpronte/package-lock.json
+
+      - name: Build apontando para a API de homologação
+        working-directory: frontwebpronte
+        env:
+          VITE_API_URL: ${{ vars.API_URL }}
+        run: |
+          if [ -z "$VITE_API_URL" ]; then
+            echo "::error::Defina a variable API_URL no environment 'homologacao'"
+            exit 1
+          fi
+          npm ci
+          npm run build
+
+      - name: Configurar acesso SSH à VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_CHAVE_SSH: ${{ secrets.VPS_CHAVE_SSH }}
+        run: |
+          if [ -z "$VPS_HOST" ] || [ -z "$VPS_CHAVE_SSH" ]; then
+            echo "::error::Defina os secrets VPS_HOST, VPS_USUARIO e VPS_CHAVE_SSH"
+            exit 1
+          fi
+          mkdir -p ~/.ssh
+          printf '%s\n' "$VPS_CHAVE_SSH" > ~/.ssh/vps
+          chmod 600 ~/.ssh/vps
+          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts
+
+      - name: Publicar o site em homologação
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USUARIO: ${{ secrets.VPS_USUARIO }}
+        run: |
+          rsync -az --delete --exclude .gitkeep -e "ssh -i ~/.ssh/vps" \
+            frontwebpronte/dist/ "$VPS_USUARIO@$VPS_HOST:Projeto-API/deploy/web-homologacao/"
+
+      - name: Conferir se o site respondeu
+        if: vars.APP_URL != ''
+        env:
+          APP_URL: ${{ vars.APP_URL }}
+        run: |
+          for tentativa in $(seq 1 12); do
+            if curl --silent --fail --max-time 20 "$APP_URL" | grep -q 'id="root"'; then exit 0; fi
+            echo "Tentativa $tentativa: site ainda não respondeu"
+            sleep 10
+          done
+          echo "::error::O site não respondeu em $APP_URL"
+          exit 1
+
+  deploy-producao:
+    name: Deploy em produção
+    needs: deploy-homologacao
+    runs-on: ubuntu-latest
+    # Este environment tem "Required reviewers": o job fica parado até alguém do grupo aprovar.
+    environment:
+      name: producao
+      url: ${{ vars.APP_URL }}
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontwebpronte/package-lock.json
+
+      - name: Build apontando para a API de produção
+        working-directory: frontwebpronte
+        env:
+          VITE_API_URL: ${{ vars.API_URL }}
+        run: |
+          if [ -z "$VITE_API_URL" ]; then
+            echo "::error::Defina a variable API_URL no environment 'producao'"
+            exit 1
+          fi
+          npm ci
+          npm run build
+
+      - name: Configurar acesso SSH à VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_CHAVE_SSH: ${{ secrets.VPS_CHAVE_SSH }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$VPS_CHAVE_SSH" > ~/.ssh/vps
+          chmod 600 ~/.ssh/vps
+          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts
+
+      - name: Publicar o site em produção
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USUARIO: ${{ secrets.VPS_USUARIO }}
+        run: |
+          rsync -az --delete --exclude .gitkeep -e "ssh -i ~/.ssh/vps" \
+            frontwebpronte/dist/ "$VPS_USUARIO@$VPS_HOST:Projeto-API/deploy/web/"
+
+      - name: Conferir se o site respondeu
+        if: vars.APP_URL != ''
+        env:
+          APP_URL: ${{ vars.APP_URL }}
+        run: |
+          for tentativa in $(seq 1 12); do
+            if curl --silent --fail --max-time 20 "$APP_URL" | grep -q 'id="root"'; then exit 0; fi
+            echo "Tentativa $tentativa: site ainda não respondeu"
+            sleep 10
+          done
+          echo "::error::O site não respondeu em $APP_URL"
+          exit 1
