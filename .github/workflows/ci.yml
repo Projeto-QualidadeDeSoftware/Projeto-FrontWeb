@@ -1,0 +1,54 @@
+name: CI
+
+# Integração contínua do front web: em todo push e pull request para main e dev,
+# instala as dependências pelo package-lock, roda o lint e gera o build de produção.
+# Se o código não compilar, o PR não pode ser mesclado.
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: frontwebpronte
+
+jobs:
+  build:
+    name: Lint e build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontwebpronte/package-lock.json
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build de produção
+        run: npm run build
+
+      - name: Publicar o build
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: frontwebpronte/dist
+          if-no-files-found: error
