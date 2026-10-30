@@ -34,7 +34,7 @@ function LoginScreen({ onLogin }) {
                     />
 
                     <h1 className="text-2xl font-bold text-[#0E1F39]">
-                        Bem-vindo ao PRONTE
+                        Bem-vindo ao Pronte Conveniencia
                     </h1>
 
                     <p className="mt-2 text-gray-500">
