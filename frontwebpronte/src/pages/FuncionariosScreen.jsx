@@ -2,6 +2,21 @@
 import { useEffect, useMemo, useState } from "react";
 import { funcionariosApi } from "../services/api";
 
+const CARGOS = [
+    "Administrador",
+    "Gerente",
+    "Operador de Caixa",
+    "Supervisor",
+    "Estoquista",
+    "Repositor",
+];
+
+// Mantém na lista o cargo de um funcionário antigo cadastrado com outro nome.
+function opcoesDeCargo(atual) {
+    const cargo = String(atual || "").trim();
+    return cargo && !CARGOS.includes(cargo) ? [...CARGOS, cargo] : CARGOS;
+}
+
 const camposVazios = {
     nome: "",
     cpf: "",
@@ -533,16 +548,23 @@ function FuncionariosScreen() {
                                     <label htmlFor="cargo" className="mb-2 block text-sm font-semibold">
                                         Cargo
                                     </label>
-                                    <input
+                                    <select
                                         id="cargo"
                                         name="cargo"
-                                        type="text"
                                         value={formulario.cargo}
                                         onChange={alterarCampo}
                                         required
-                                        className="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none focus:border-[#ff5a16] focus:ring-2 focus:ring-orange-100"
-                                        placeholder="Cargo"
-                                    />
+                                        className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none focus:border-[#ff5a16] focus:ring-2 focus:ring-orange-100"
+                                    >
+                                        <option value="" disabled>
+                                            Selecione o cargo
+                                        </option>
+                                        {opcoesDeCargo(formulario.cargo).map((opcao) => (
+                                            <option key={opcao} value={opcao}>
+                                                {opcao}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
 
                                 <div className="sm:col-span-2">
